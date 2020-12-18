@@ -1,7 +1,8 @@
 { checkMaterialization ? false }:
 
 let
-  _pkgs = import <nixpkgs> {};
+  # Get a copy of Nixpkgs for fetchgit and importJSON. Any recent version will do fine.
+  _pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-20.09.tar.gz") {};
   fetchgit = lockFile: _pkgs.fetchgit {
       inherit (_pkgs.lib.importJSON lockFile)
         url rev sha256 fetchSubmodules deepClone leaveDotGit;
