@@ -37,11 +37,14 @@ let
     "8.10.1"
     "8.10.2"
   ];
+
+  projects =
+    lib.pipe versions
+    [
+      (map (name: lib.nameValuePair name (mk name)))
+      lib.listToAttrs
+    ];
+
 in
 
-lib.pipe versions
-  [
-    (map (name: lib.nameValuePair name (mk name)))
-    lib.listToAttrs
-  ]
-
+projects // { inherit pkgs versions; }
