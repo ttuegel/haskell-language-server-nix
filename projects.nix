@@ -15,6 +15,7 @@ in
 
 let
   inherit (import sources."haskell.nix" {}) pkgs;
+  inherit (pkgs) lib;
 in
 
 let
@@ -29,11 +30,18 @@ let
     inherit checkMaterialization;
     materialized = ./. + "/ghc-${ghc}.nix.d";
   };
+
+  versions = [
+    "8.8.3"
+    "8.8.4"
+    "8.10.1"
+    "8.10.2"
+  ];
 in
 
-{
-  "ghc-8.8.3" = mk "8.8.3";
-  "ghc-8.8.4" = mk "8.8.4";
-  "ghc-8.10.1" = mk "8.10.1";
-  "ghc-8.10.2" = mk "8.10.2";
-}
+lib.pipe versions
+  [
+    (map (name: lib.nameValuePair name (mk name)))
+    lib.listToAttrs
+  ]
+
