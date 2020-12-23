@@ -32,7 +32,6 @@ let
         { enableSeparateDataOutput = true; }
         # Patch ghcide so that it does not capture GHC in the closure.
         { packages.ghcide.patches = [ ./ghcide-session-loader.patch ]; }
-        { packages.brittany.patches = [ ./brittany-ghc-paths.patch ]; }
         { packages.ghc-exactprint.patches = [ ./ghc-exactprint-ghc-paths.patch ]; }
       ];
     inherit checkMaterialization;
