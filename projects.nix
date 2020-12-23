@@ -22,18 +22,21 @@ let
   mk = ghc: pkgs.haskell-nix.project {
     src = sources."haskell-language-server";
     projectFileName = "stack-${ghc}.yaml";
-    modules = [
-      # Strip the executables to reduce closure size.
-      { dontStrip = false; }
-      # Separate data and libraries to reduce closure size.
-      # With static linking, the data is required, but the libraries are not.
-      { enableSeparateDataOutput = true; }
-      # Patch ghcide so that it does not capture GHC in the closure.
-      { packages.ghcide.patches = [ ./ghcide-session-loader.patch ]; }
-      { packages.ghc-check.patches = [ ./ghc-check-ghc-paths.patch ]; }
-      { packages.brittany.patches = [ ./brittany-ghc-paths.patch ]; }
-      { packages.ghc-exactprint.patches = [ ./ghc-exactprint-ghc-paths.patch ]; }
-    ];
+    modules =
+      [
+        # Strip the executables to reduce closure size.
+        { dontStrip = false; }
+        # Separate data and libraries to reduce closure size.
+        # With static linking, the data is required, but the libraries are not.
+        # The shared libraries incur a runtime dependency on GHC.
+        { enableSeparateDataOutput = true; }
+        # Patch ghcide so that it does not capture GHC in the closure.
+        { packages.ghcide.patches = [ ./ghcide-session-loader.patch ]; }
+        { packages.brittany.patches = [ ./brittany-ghc-paths.patch ]; }
+        { packages.ghc-exactprint.patches = [ ./ghc-exactprint-ghc-paths.patch ]; }
+      ]
+      ++ lib.optional (lib.versionOlder ghc "8.10.2") { packages.ghc-check.patches = [ ./ghc-check-ghc-paths.patch ]; }
+      ;
     inherit checkMaterialization;
     materialized = ./. + "/ghc-${ghc}.nix.d";
   };
