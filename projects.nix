@@ -30,8 +30,6 @@ let
         # With static linking, the data is required, but the libraries are not.
         # The shared libraries incur a runtime dependency on GHC.
         { enableSeparateDataOutput = true; }
-        # Patch ghcide so that it does not capture GHC in the closure.
-        { packages.ghcide.patches = [ ./ghcide-session-loader.patch ]; }
         { packages.ghc-exactprint.patches = [ ./ghc-exactprint-ghc-paths.patch ]; }
       ];
     inherit checkMaterialization;
