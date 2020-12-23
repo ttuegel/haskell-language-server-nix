@@ -1,0 +1,16 @@
+diff --git a/session-loader/Development/IDE/Session/VersionCheck.hs b/session-loader/Development/IDE/Session/VersionCheck.hs
+index f15e765..308745c 100644
+--- a/session-loader/Development/IDE/Session/VersionCheck.hs
++++ b/session-loader/Development/IDE/Session/VersionCheck.hs
+@@ -10,8 +10,9 @@ import GHC.Check
+ -- Only use this for checking against the compile time GHC libDir!
+ -- Use getRuntimeGhcLibDir from hie-bios instead for everything else
+ -- otherwise binaries will not be distributable since paths will be baked into them
+-import qualified GHC.Paths
+ import System.Environment
+ 
++-- This will only be used at compile-time, so we know that NIX_GHC_LIBDIR will
++-- be set under Nix.
+ ghcVersionChecker :: GhcVersionChecker
+-ghcVersionChecker = $$(makeGhcVersionChecker (fromMaybe GHC.Paths.libdir <$> lookupEnv "NIX_GHC_LIBDIR"))
++ghcVersionChecker = $$(makeGhcVersionChecker (fromMaybe "/var/empty" <$> lookupEnv "NIX_GHC_LIBDIR"))

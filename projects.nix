@@ -23,9 +23,16 @@ let
     src = sources."haskell-language-server";
     projectFileName = "stack-${ghc}.yaml";
     modules = [
-      # This fixes a performance issue, probably
-      # https://gitlab.haskell.org/ghc/ghc/issues/15524
-      { packages.ghcide.configureFlags = [ "--enable-executable-dynamic" ]; }
+      # Strip the executables to reduce closure size.
+      { dontStrip = false; }
+      # Separate data and libraries to reduce closure size.
+      # With static linking, the data is required, but the libraries are not.
+      { enableSeparateDataOutput = true; }
+      # Patch ghcide so that it does not capture GHC in the closure.
+      { packages.ghcide.patches = [ ./ghcide-session-loader.patch ]; }
+      { packages.ghc-check.patches = [ ./ghc-check-ghc-paths.patch ]; }
+      { packages.brittany.patches = [ ./brittany-ghc-paths.patch ]; }
+      { packages.ghc-exactprint.patches = [ ./ghc-exactprint-ghc-paths.patch ]; }
     ];
     inherit checkMaterialization;
     materialized = ./. + "/ghc-${ghc}.nix.d";
