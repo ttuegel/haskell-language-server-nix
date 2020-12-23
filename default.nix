@@ -29,7 +29,18 @@ let
   exe = name: version:
     projects.${version}.haskell-language-server.components.exes.${name};
   wrapper = exe "haskell-language-server-wrapper" latest-ghc-version;
-  server = version: exe "haskell-language-server" version;
+  server = version:
+    pkgs.runCommand "haskell-languager-server-${version}"
+      {
+        inherit version;
+        server = exe "haskell-language-server" version;
+      }
+      ''
+        mkdir -p "$out/bin"
+        ln -s \
+          "$server/bin/haskell-language-server" \
+          "$out/bin/haskell-language-server-$version"
+      '';
 in
 
 pkgs.runCommand "haskell-language-server"
