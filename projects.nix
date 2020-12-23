@@ -34,9 +34,7 @@ let
         { packages.ghcide.patches = [ ./ghcide-session-loader.patch ]; }
         { packages.brittany.patches = [ ./brittany-ghc-paths.patch ]; }
         { packages.ghc-exactprint.patches = [ ./ghc-exactprint-ghc-paths.patch ]; }
-      ]
-      ++ lib.optional (lib.versionOlder ghc "8.10.2") { packages.ghc-check.patches = [ ./ghc-check-ghc-paths.patch ]; }
-      ;
+      ];
     inherit checkMaterialization;
     materialized = ./. + "/ghc-${ghc}.nix.d";
   };
