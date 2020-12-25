@@ -30,3 +30,6 @@ jobs:
 
       - name: Build
         run: nix-build --arg ghc-versions '[ "${{ matrix.ghc-version }}" ]'
+
+      - name: Clean up cache
+        run: nix-collect-garbage -d
