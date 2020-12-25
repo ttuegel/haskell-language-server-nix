@@ -3,6 +3,7 @@ on:
   push:
     branches-ignore:
       - 'main'
+  pull_request:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,8 +21,18 @@ jobs:
       - name: Rematerialize
         run: ./rematerialize.sh
 
+      - name: Check for changes
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [ ! $(git status --porcelain | wc -l) -eq 0 ]; then
+            echo "Found dirty files:"
+            git status --porcelain
+            exit 1
+          fi
+
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.7.2
+        if: ${{ github.event_name == 'push' }}
         with:
           commit_message: 'Rematerialize Nix expressions'
           file_pattern: '*.nix.d/'
