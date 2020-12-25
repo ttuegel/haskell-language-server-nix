@@ -1,0 +1,38 @@
+name: "Rematerialize"
+on:
+  push:
+    branches-ignore:
+      - 'main'
+  pull_request:
+jobs:
+  rematerialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2.3.4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v12
+        with:
+          extra_nix_config: |
+            substituters = http://cache.nixos.org https://hydra.iohk.io
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+
+      - name: Rematerialize
+        run: ./rematerialize.sh
+
+      - name: Check for changes
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          if [ ! $(git status --porcelain | wc -l) -eq 0 ]; then
+            echo "Found dirty files:"
+            git status --porcelain
+            exit 1
+          fi
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4.7.2
+        if: ${{ github.event_name == 'push' }}
+        with:
+          commit_message: 'Rematerialize Nix expressions'
+          file_pattern: '*.nix.d/'

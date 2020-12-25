@@ -15,25 +15,41 @@ in
 
 let
   inherit (import sources."haskell.nix" {}) pkgs;
+  inherit (pkgs) lib;
 in
 
 let
   mk = ghc: pkgs.haskell-nix.project {
     src = sources."haskell-language-server";
     projectFileName = "stack-${ghc}.yaml";
-    modules = [
-      # This fixes a performance issue, probably
-      # https://gitlab.haskell.org/ghc/ghc/issues/15524
-      { packages.ghcide.configureFlags = [ "--enable-executable-dynamic" ]; }
-    ];
+    modules =
+      [
+        # Strip the executables to reduce closure size.
+        { dontStrip = false; }
+        # Separate data and libraries to reduce closure size.
+        # With static linking, the data is required, but the libraries are not.
+        # The shared libraries incur a runtime dependency on GHC.
+        { enableSeparateDataOutput = true; }
+        { packages.ghc-exactprint.patches = [ ./ghc-exactprint-ghc-paths.patch ]; }
+      ];
     inherit checkMaterialization;
     materialized = ./. + "/ghc-${ghc}.nix.d";
   };
+
+  versions = [
+    "8.8.3"
+    "8.8.4"
+    "8.10.1"
+    "8.10.2"
+  ];
+
+  projects =
+    lib.pipe versions
+    [
+      (map (name: lib.nameValuePair name (mk name)))
+      lib.listToAttrs
+    ];
+
 in
 
-{
-  "ghc-8.8.3" = mk "8.8.3";
-  "ghc-8.8.4" = mk "8.8.4";
-  "ghc-8.10.1" = mk "8.10.1";
-  "ghc-8.10.2" = mk "8.10.2";
-}
+projects // { inherit pkgs versions; }
